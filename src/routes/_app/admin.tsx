@@ -1,9 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { decideDeposit, decideWithdrawal, getAdminQueue } from "@/lib/app.functions";
+import {
+  adminResetUserPassword,
+  adminUpdateBalance,
+  decideDeposit,
+  decideWithdrawal,
+  getAdminQueue,
+} from "@/lib/app.functions";
 import { formatMzn } from "@/lib/countries";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_app/admin")({
   head: () => ({
@@ -46,6 +54,17 @@ function Admin() {
   return (
     <main className="mx-auto max-w-md space-y-5 px-4 pt-6">
       <h1 className="text-xl font-bold">Administração</h1>
+
+      <section className="space-y-2">
+        <h2 className="text-base font-semibold">Utilizadores ({data?.users?.length ?? 0})</h2>
+        <p className="text-xs text-muted-foreground">
+          Por segurança, as senhas são guardadas encriptadas e não podem ser lidas por ninguém — pode, no entanto,
+          definir uma nova senha para qualquer utilizador.
+        </p>
+        {(data?.users ?? []).map((u) => (
+          <UserCard key={u.id} user={u} onDone={refresh} />
+        ))}
+      </section>
 
       <section className="space-y-2">
         <h2 className="text-base font-semibold">Depósitos</h2>
