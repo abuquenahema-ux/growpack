@@ -28,6 +28,68 @@ export const Route = createFileRoute("/_app/admin")({
 });
 
 function Admin() {
+  return <AdminInner />;
+}
+
+type ProfileRow = {
+  id: string;
+  full_name: string;
+  phone: string;
+  country_code: string;
+  balance: number | string;
+  total_deposited: number | string;
+  total_earned: number | string;
+  referral_code: string;
+};
+
+function UserCard({ user, onDone }: { user: ProfileRow; onDone: () => void }) {
+  const [pw, setPw] = useState("");
+  const [bal, setBal] = useState(String(Number(user.balance)));
+
+  const resetPw = useMutation({
+    mutationFn: () => adminResetUserPassword({ data: { userId: user.id, password: pw } }),
+    onSuccess: () => {
+      toast.success("Senha redefinida");
+      setPw("");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
+  const setBalance = useMutation({
+    mutationFn: () => adminUpdateBalance({ data: { userId: user.id, balance: Number(bal) } }),
+    onSuccess: () => {
+      toast.success("Saldo atualizado");
+      onDone();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
+  });
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className="text-sm font-semibold">{user.full_name || "—"}</p>
+      <p className="text-xs text-muted-foreground">
+        {user.country_code} {user.phone} • convite {user.referral_code}
+      </p>
+      <p className="mt-1 text-xs">
+        Saldo <span className="font-semibold">{formatMzn(Number(user.balance))}</span> • Depositado{" "}
+        {formatMzn(Number(user.total_deposited))} • Ganho {formatMzn(Number(user.total_earned))}
+      </p>
+      <div className="mt-3 flex gap-2">
+        <Input value={bal} onChange={(e) => setBal(e.target.value)} inputMode="decimal" placeholder="Saldo" />
+        <Button size="sm" variant="secondary" onClick={() => setBalance.mutate()}>
+          Guardar
+        </Button>
+      </div>
+      <div className="mt-2 flex gap-2">
+        <Input value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Nova senha (mín. 6)" />
+        <Button size="sm" disabled={pw.length < 6} onClick={() => resetPw.mutate()}>
+          Redefinir
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function AdminInner() {
   const qc = useQueryClient();
   const { data, error } = useQuery({ queryKey: ["admin"], queryFn: () => getAdminQueue(), retry: false });
 
