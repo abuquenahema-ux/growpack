@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppCarteiraRouteImport } from './routes/_app/carteira'
+import { Route as AppConviteRouteImport } from './routes/_app/convite'
+import { Route as AppFundoRouteImport } from './routes/_app/fundo'
+import { Route as AppInicioRouteImport } from './routes/_app/inicio'
+import { Route as AppPerfilRouteImport } from './routes/_app/perfil'
+import { Route as AppRoletaRouteImport } from './routes/_app/roleta'
+import { Route as AppTransacoesRouteImport } from './routes/_app/transacoes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCarteiraRoute = AppCarteiraRouteImport.update({
+  id: '/carteira',
+  path: '/carteira',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConviteRoute = AppConviteRouteImport.update({
+  id: '/convite',
+  path: '/convite',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFundoRoute = AppFundoRouteImport.update({
+  id: '/fundo',
+  path: '/fundo',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInicioRoute = AppInicioRouteImport.update({
+  id: '/inicio',
+  path: '/inicio',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPerfilRoute = AppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoletaRoute = AppRoletaRouteImport.update({
+  id: '/roleta',
+  path: '/roleta',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTransacoesRoute = AppTransacoesRouteImport.update({
+  id: '/transacoes',
+  path: '/transacoes',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AppAdminRoute
+  '/carteira': typeof AppCarteiraRoute
+  '/convite': typeof AppConviteRoute
+  '/fundo': typeof AppFundoRoute
+  '/inicio': typeof AppInicioRoute
+  '/perfil': typeof AppPerfilRoute
+  '/roleta': typeof AppRoletaRoute
+  '/transacoes': typeof AppTransacoesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AppAdminRoute
+  '/carteira': typeof AppCarteiraRoute
+  '/convite': typeof AppConviteRoute
+  '/fundo': typeof AppFundoRoute
+  '/inicio': typeof AppInicioRoute
+  '/perfil': typeof AppPerfilRoute
+  '/roleta': typeof AppRoletaRoute
+  '/transacoes': typeof AppTransacoesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/admin': typeof AppAdminRoute
+  '/_app/carteira': typeof AppCarteiraRoute
+  '/_app/convite': typeof AppConviteRoute
+  '/_app/fundo': typeof AppFundoRoute
+  '/_app/inicio': typeof AppInicioRoute
+  '/_app/perfil': typeof AppPerfilRoute
+  '/_app/roleta': typeof AppRoletaRoute
+  '/_app/transacoes': typeof AppTransacoesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/carteira'
+    | '/convite'
+    | '/fundo'
+    | '/inicio'
+    | '/perfil'
+    | '/roleta'
+    | '/transacoes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/carteira'
+    | '/convite'
+    | '/fundo'
+    | '/inicio'
+    | '/perfil'
+    | '/roleta'
+    | '/transacoes'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/admin'
+    | '/_app/carteira'
+    | '/_app/convite'
+    | '/_app/fundo'
+    | '/_app/inicio'
+    | '/_app/perfil'
+    | '/_app/roleta'
+    | '/_app/transacoes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +156,100 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/carteira': {
+      id: '/_app/carteira'
+      path: '/carteira'
+      fullPath: '/carteira'
+      preLoaderRoute: typeof AppCarteiraRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/convite': {
+      id: '/_app/convite'
+      path: '/convite'
+      fullPath: '/convite'
+      preLoaderRoute: typeof AppConviteRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/fundo': {
+      id: '/_app/fundo'
+      path: '/fundo'
+      fullPath: '/fundo'
+      preLoaderRoute: typeof AppFundoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inicio': {
+      id: '/_app/inicio'
+      path: '/inicio'
+      fullPath: '/inicio'
+      preLoaderRoute: typeof AppInicioRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/perfil': {
+      id: '/_app/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AppPerfilRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/roleta': {
+      id: '/_app/roleta'
+      path: '/roleta'
+      fullPath: '/roleta'
+      preLoaderRoute: typeof AppRoletaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/transacoes': {
+      id: '/_app/transacoes'
+      path: '/transacoes'
+      fullPath: '/transacoes'
+      preLoaderRoute: typeof AppTransacoesRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
+  AppCarteiraRoute: typeof AppCarteiraRoute
+  AppConviteRoute: typeof AppConviteRoute
+  AppFundoRoute: typeof AppFundoRoute
+  AppInicioRoute: typeof AppInicioRoute
+  AppPerfilRoute: typeof AppPerfilRoute
+  AppRoletaRoute: typeof AppRoletaRoute
+  AppTransacoesRoute: typeof AppTransacoesRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
+  AppCarteiraRoute: AppCarteiraRoute,
+  AppConviteRoute: AppConviteRoute,
+  AppFundoRoute: AppFundoRoute,
+  AppInicioRoute: AppInicioRoute,
+  AppPerfilRoute: AppPerfilRoute,
+  AppRoletaRoute: AppRoletaRoute,
+  AppTransacoesRoute: AppTransacoesRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
