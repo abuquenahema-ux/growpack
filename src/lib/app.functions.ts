@@ -97,3 +97,21 @@ export const decideWithdrawal = createServerFn({ method: "POST" })
     const { reviewWithdrawal } = await import("./app.server");
     return reviewWithdrawal(context.userId, data.id, data.approve);
   });
+
+export const adminResetUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ userId: z.string().uuid(), password: z.string().min(6) }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { adminResetPassword } = await import("./app.server");
+    return adminResetPassword(context.userId, data.userId, data.password);
+  });
+
+export const adminUpdateBalance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ userId: z.string().uuid(), balance: z.number().min(0) }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { adminSetBalance } = await import("./app.server");
+    return adminSetBalance(context.userId, data.userId, data.balance);
+  });

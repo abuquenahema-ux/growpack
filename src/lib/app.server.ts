@@ -199,11 +199,26 @@ async function assertAdmin(userId: string) {
 
 export async function loadAdmin(userId: string) {
   await assertAdmin(userId);
-  const [deposits, withdrawals] = await Promise.all([
+  const [deposits, withdrawals, users] = await Promise.all([
     supabaseAdmin.from("deposits").select("*").order("created_at", { ascending: false }).limit(100),
     supabaseAdmin.from("withdrawals").select("*").order("created_at", { ascending: false }).limit(100),
+    supabaseAdmin.from("profiles").select("*").order("created_at", { ascending: false }).limit(200),
   ]);
-  return { deposits: deposits.data ?? [], withdrawals: withdrawals.data ?? [] };
+  return { deposits: deposits.data ?? [], withdrawals: withdrawals.data ?? [], users: users.data ?? [] };
+}
+
+export async function adminResetPassword(adminId: string, targetUserId: string, newPassword: string) {
+  await assertAdmin(adminId);
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(targetUserId, { password: newPassword });
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
+
+export async function adminSetBalance(adminId: string, targetUserId: string, balance: number) {
+  await assertAdmin(adminId);
+  await supabaseAdmin.from("profiles").update({ balance }).eq("id", targetUserId);
+  await logTx(targetUserId, "ajuste", 0, `Saldo ajustado pelo administrador para ${balance} MZN`);
+  return { ok: true };
 }
 
 export async function reviewDeposit(userId: string, depositId: string, approve: boolean) {
