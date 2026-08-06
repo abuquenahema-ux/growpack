@@ -98,23 +98,52 @@ function AuthPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === "login" && emailMode) {
-      if (!email.includes("@")) {
+    if (emailMode) {
+      if (!email.includes("@") || !email.includes(".")) {
         toast.error("Email inválido");
         return;
       }
-      if (password.length < 4) {
-        toast.error("Senha inválida");
+      if (password.length < (mode === "cadastro" ? 6 : 4)) {
+        toast.error("A senha deve ter pelo menos 6 caracteres");
         return;
+      }
+      if (mode === "cadastro") {
+        if (fullName.trim().split(" ").length < 2) {
+          toast.error("Escreva o seu nome completo");
+          return;
+        }
+        if (password !== confirm) {
+          toast.error("As senhas não coincidem");
+          return;
+        }
       }
       setBusy(true);
       try {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
-        });
-        if (error) throw new Error("Email ou senha incorretos");
-        toast.success("Bem-vindo de volta!");
+        const cleanEmail = email.trim().toLowerCase();
+        if (mode === "cadastro") {
+          const { error } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password,
+            options: { emailRedirectTo: window.location.origin },
+          });
+          if (error) throw error;
+          await setupProfile({
+            data: {
+              fullName: fullName.trim(),
+              phone: "",
+              countryCode: dial,
+              referralCode: invite.trim() || undefined,
+            },
+          });
+          toast.success("Conta criada com sucesso!");
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password,
+          });
+          if (error) throw new Error("Email ou senha incorretos");
+          toast.success("Bem-vindo de volta!");
+        }
         navigate({ to: "/inicio" });
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ocorreu um erro");
@@ -220,9 +249,9 @@ function AuthPage() {
             </div>
           )}
 
-          {mode === "login" && emailMode ? (
+          {emailMode ? (
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email do administrador</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -282,15 +311,13 @@ function AuthPage() {
             {mode === "cadastro" ? "Criar conta" : "Entrar"}
           </Button>
 
-          {mode === "login" && (
-            <button
-              type="button"
-              onClick={() => setEmailMode((v) => !v)}
-              className="w-full text-center text-xs font-medium text-muted-foreground underline-offset-4 hover:underline"
-            >
-              {emailMode ? "Entrar com número de telefone" : "Entrar com email (administrador)"}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setEmailMode((v) => !v)}
+            className="w-full text-center text-xs font-medium text-muted-foreground underline-offset-4 hover:underline"
+          >
+            {emailMode ? "Usar número de telefone" : "Usar email"}
+          </button>
         </form>
       </div>
     </main>
