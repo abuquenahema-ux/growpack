@@ -10,6 +10,30 @@ async function logTx(userId: string, type: string, amount: number, description: 
   await supabaseAdmin.from("transactions").insert({ user_id: userId, type, amount, description });
 }
 
+function fmt(value: number) {
+  return `${new Intl.NumberFormat("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} MZN`;
+}
+
+async function notify(userId: string, title: string, body: string, kind: string) {
+  await supabaseAdmin.from("notifications").insert({ user_id: userId, title, body, kind });
+}
+
+export async function loadNotifications(userId: string) {
+  const { data } = await supabaseAdmin
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  const items = data ?? [];
+  return { items, unread: items.filter((n) => !n.read).length };
+}
+
+export async function markNotificationsRead(userId: string) {
+  await supabaseAdmin.from("notifications").update({ read: true }).eq("user_id", userId).eq("read", false);
+  return { ok: true };
+}
+
 async function addBalance(userId: string, amount: number, field?: "total_earned" | "total_deposited") {
   const { data } = await supabaseAdmin.from("profiles").select("*").eq("id", userId).maybeSingle();
   if (!data) return;
@@ -229,11 +253,25 @@ export async function reviewDeposit(userId: string, depositId: string, approve: 
     .from("deposits")
     .update({ status: approve ? "aprovado" : "rejeitado" })
     .eq("id", depositId);
-  if (!approve) return { ok: true };
-
   const amount = Number(dep.amount);
+  if (!approve) {
+    await notify(
+      dep.user_id,
+      "Depósito rejeitado",
+      `O seu depósito de ${fmt(amount)} via ${dep.method} foi rejeitado. Verifique a referência e tente novamente.`,
+      "erro",
+    );
+    return { ok: true };
+  }
+
   await addBalance(dep.user_id, amount, "total_deposited");
   await logTx(dep.user_id, "deposito", amount, `Depósito aprovado (${dep.method})`);
+  await notify(
+    dep.user_id,
+    "Depósito aprovado",
+    `O seu depósito de ${fmt(amount)} via ${dep.method} foi aprovado e o saldo já está disponível.`,
+    "sucesso",
+  );
 
   const { data: profile } = await supabaseAdmin.from("profiles").select("*").eq("id", dep.user_id).maybeSingle();
   if (profile && !profile.first_deposit_done) {
@@ -258,6 +296,19 @@ export async function reviewWithdrawal(userId: string, withdrawalId: string, app
   if (!approve) {
     await addBalance(wd.user_id, Number(wd.amount));
     await logTx(wd.user_id, "reembolso", Number(wd.amount), "Levantamento rejeitado — valor devolvido");
+    await notify(
+      wd.user_id,
+      "Levantamento rejeitado",
+      `O seu pedido de levantamento de ${fmt(Number(wd.amount))} foi rejeitado e o valor foi devolvido ao seu saldo.`,
+      "erro",
+    );
+    return { ok: true };
   }
+  await notify(
+    wd.user_id,
+    "Levantamento aprovado",
+    `O seu levantamento de ${fmt(Number(wd.amount))} via ${wd.method} foi pago para ${wd.destination || "o destino indicado"}.`,
+    "sucesso",
+  );
   return { ok: true };
 }
