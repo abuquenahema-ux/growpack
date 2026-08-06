@@ -80,6 +80,8 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [invite, setInvite] = useState("");
+  const [emailMode, setEmailMode] = useState(false);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -96,6 +98,31 @@ function AuthPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (mode === "login" && emailMode) {
+      if (!email.includes("@")) {
+        toast.error("Email inválido");
+        return;
+      }
+      if (password.length < 4) {
+        toast.error("Senha inválida");
+        return;
+      }
+      setBusy(true);
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (error) throw new Error("Email ou senha incorretos");
+        toast.success("Bem-vindo de volta!");
+        navigate({ to: "/inicio" });
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Ocorreu um erro");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     const digits = normalizePhone(dial, phone);
     if (digits.length < 8) {
       toast.error("Número inválido para " + country.name);
@@ -193,33 +220,46 @@ function AuthPage() {
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="numero">Número de telefone</Label>
-            <div className="flex gap-2">
-              <select
-                aria-label="Região"
-                value={dial}
-                onChange={(e) => setDial(e.target.value)}
-                className="h-10 w-32 rounded-md border border-input bg-input/40 px-2 text-sm"
-              >
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.dial}>
-                    {c.flag} {c.dial}
-                  </option>
-                ))}
-              </select>
+          {mode === "login" && emailMode ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email do administrador</Label>
               <Input
-                id="numero"
-                inputMode="numeric"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={"8".padEnd(country.digits, "0")}
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="nome@email.com"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              {country.name} • {country.digits} dígitos • será usado para entrar
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label htmlFor="numero">Número de telefone</Label>
+              <div className="flex gap-2">
+                <select
+                  aria-label="Região"
+                  value={dial}
+                  onChange={(e) => setDial(e.target.value)}
+                  className="h-10 w-32 rounded-md border border-input bg-input/40 px-2 text-sm"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.dial}>
+                      {c.flag} {c.dial}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  id="numero"
+                  inputMode="numeric"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={"8".padEnd(country.digits, "0")}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {country.name} • {country.digits} dígitos • será usado para entrar
+              </p>
+            </div>
+          )}
 
           <PasswordField id="senha" label="Senha" value={password} onChange={setPassword} />
           {mode === "cadastro" && (
@@ -241,6 +281,16 @@ function AuthPage() {
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {mode === "cadastro" ? "Criar conta" : "Entrar"}
           </Button>
+
+          {mode === "login" && (
+            <button
+              type="button"
+              onClick={() => setEmailMode((v) => !v)}
+              className="w-full text-center text-xs font-medium text-muted-foreground underline-offset-4 hover:underline"
+            >
+              {emailMode ? "Entrar com número de telefone" : "Entrar com email (administrador)"}
+            </button>
+          )}
         </form>
       </div>
     </main>

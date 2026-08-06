@@ -115,3 +115,17 @@ export const adminUpdateBalance = createServerFn({ method: "POST" })
     const { adminSetBalance } = await import("./app.server");
     return adminSetBalance(context.userId, data.userId, data.balance);
   });
+
+export const getNotifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { loadNotifications } = await import("./app.server");
+    return loadNotifications(context.userId);
+  });
+
+export const readNotifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { markNotificationsRead } = await import("./app.server");
+    return markNotificationsRead(context.userId);
+  });
