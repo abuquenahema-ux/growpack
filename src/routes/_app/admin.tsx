@@ -8,6 +8,7 @@ import {
   decideDeposit,
   decideWithdrawal,
   getAdminQueue,
+  getDashboard,
 } from "@/lib/app.functions";
 import { formatMzn } from "@/lib/countries";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,18 @@ function UserCard({ user, onDone }: { user: ProfileRow; onDone: () => void }) {
 
 function AdminInner() {
   const qc = useQueryClient();
-  const { data, error } = useQuery({ queryKey: ["admin"], queryFn: () => getAdminQueue(), retry: false });
+  const { data: dash, isLoading: dashLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => getDashboard(),
+    retry: false,
+  });
+  const isAdmin = !!dash?.isAdmin;
+  const { data, error } = useQuery({
+    queryKey: ["admin"],
+    queryFn: () => getAdminQueue(),
+    retry: false,
+    enabled: isAdmin,
+  });
 
   const refresh = () => void qc.invalidateQueries({ queryKey: ["admin"] });
   const dep = useMutation({
@@ -111,7 +123,9 @@ function AdminInner() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
 
-  if (error) return <main className="p-6 text-sm text-muted-foreground">Acesso restrito a administradores.</main>;
+  if (dashLoading) return <main className="p-6 text-sm text-muted-foreground">A carregar…</main>;
+  if (!isAdmin || error)
+    return <main className="p-6 text-sm text-muted-foreground">Acesso restrito a administradores.</main>;
 
   return (
     <main className="mx-auto max-w-md space-y-5 px-4 pt-6">
