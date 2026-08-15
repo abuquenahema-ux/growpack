@@ -76,8 +76,16 @@ export async function ensureProfile(
     country_code: input.countryCode,
     referral_code: code,
     referred_by: referredBy,
+    balance: SIGNUP_BONUS,
   });
   await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "user" });
+  await logTx(userId, "bonus_cadastro", SIGNUP_BONUS, "Bónus de boas-vindas por criar conta");
+  await notify(
+    userId,
+    "Bónus de cadastro",
+    `Recebeu ${fmt(SIGNUP_BONUS)} de bónus de boas-vindas no seu saldo.`,
+    "sucesso",
+  );
   return { created: true };
 }
 
