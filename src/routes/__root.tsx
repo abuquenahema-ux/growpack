@@ -103,6 +103,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/icons/icon-192.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "InvestNatura",
+          url: "https://growpack.lovable.app",
+          logo: "https://growpack.lovable.app/icons/icon-512.png",
+          description:
+            "Plataforma de investimento em Moçambique: produtos de 365 dias, rendimento diário e bónus de convite.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "InvestNatura",
+          url: "https://growpack.lovable.app",
+          inLanguage: "pt-MZ",
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
