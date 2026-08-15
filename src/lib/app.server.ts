@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const SIGNUP_BONUS = 25;
 
 function randomCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
