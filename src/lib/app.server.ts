@@ -220,24 +220,30 @@ export async function loadReferrals(userId: string) {
   return { code: profile?.referral_code ?? "", invited: invited ?? [], totalBonus: total };
 }
 
-async function assertAdmin(userId: string) {
+async function isAdminUser(userId: string) {
   const { data } = await supabaseAdmin
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
     .eq("role", "admin")
     .maybeSingle();
-  if (!data) throw new Error("Acesso restrito a administradores");
+  return !!data;
+}
+
+async function assertAdmin(userId: string) {
+  if (!(await isAdminUser(userId))) throw new Error("Acesso restrito a administradores");
 }
 
 export async function loadAdmin(userId: string) {
-  await assertAdmin(userId);
+  if (!(await isAdminUser(userId))) {
+    return { authorized: false, deposits: [], withdrawals: [], users: [] };
+  }
   const [deposits, withdrawals, users] = await Promise.all([
     supabaseAdmin.from("deposits").select("*").order("created_at", { ascending: false }).limit(100),
     supabaseAdmin.from("withdrawals").select("*").order("created_at", { ascending: false }).limit(100),
     supabaseAdmin.from("profiles").select("*").order("created_at", { ascending: false }).limit(200),
   ]);
-  return { deposits: deposits.data ?? [], withdrawals: withdrawals.data ?? [], users: users.data ?? [] };
+  return { authorized: true, deposits: deposits.data ?? [], withdrawals: withdrawals.data ?? [], users: users.data ?? [] };
 }
 
 export async function adminResetPassword(adminId: string, targetUserId: string, newPassword: string) {

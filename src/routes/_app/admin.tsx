@@ -124,7 +124,7 @@ function AdminInner() {
   });
 
   if (dashLoading) return <main className="p-6 text-sm text-muted-foreground">A carregar…</main>;
-  if (!isAdmin || error)
+  if (!isAdmin || error || data?.authorized === false)
     return <main className="p-6 text-sm text-muted-foreground">Acesso restrito a administradores.</main>;
 
   return (
